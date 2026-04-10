@@ -10,14 +10,15 @@ import {
   StatusBar
 } from 'react-native';
 
+import PiezaFormModal from './src/components/PiezaFormModal';
+import DetallePiezaModal from './src/components/DetallePiezaModal';
+
 // 1. IMPORTACIÓN DE ESTILOS EXTERNOS
-// Importamos el objeto 'styles' desde la ruta donde lo creaste.
 import { styles } from './src/styles/globalStyles';
 
 export default function App() {
   
   // 2. ESTADO INICIAL (Hooks)
-  // 'piezas' es el array de datos y 'setPiezas' es la función para actualizarlo.
   const [piezas, setPiezas] = useState([
     { 
       id: '1', 
@@ -37,8 +38,12 @@ export default function App() {
     },
   ]);
 
+  // Estados para controlar la visibilidad de los modales y la pieza seleccionada
+  const [modalFormularioVisible, setModalFormularioVisible] = useState(false);
+  const [modalDetalleVisible, setModalDetalleVisible] = useState(false);
+  const [piezaSeleccionada, setPiezaSeleccionada] = useState(null);
+
   // 3. LÓGICA DE ELIMINACIÓN
-  // Usamos Alert (componente nativo) para confirmar la acción.
   const eliminarPieza = (id) => {
     Alert.alert(
       "Confirmar Eliminación",
@@ -49,8 +54,6 @@ export default function App() {
           text: "Sí, eliminar", 
           style: "destructive", 
           onPress: () => {
-            // El método .filter crea un nuevo array EXCLUYENDO el id seleccionado.
-            // Esto es programación funcional, no mutamos el estado directamente.
             setPiezas(piezas.filter(p => p.id !== id));
           } 
         }
@@ -60,18 +63,19 @@ export default function App() {
 
   // 4. RENDERIZADO DE CADA ITEM (La tarjeta)
   const renderItem = ({ item }) => (
-    /* TouchableOpacity: Componente interactivo que da feedback visual al tocar */
     <TouchableOpacity 
       style={styles.card} 
       activeOpacity={0.7}
-      onPress={() => Alert.alert("Detalle", `Ver toda la info de: ${item.tipo}`)}
+      onPress={() => {
+        setPiezaSeleccionada(item);
+        setModalDetalleVisible(true);
+      }}
     >
       <View style={styles.info}>
         <Text style={styles.tipoText}>{item.tipo}</Text>
         <Text style={styles.fechaText}>Fecha de cambio: {item.fecha}</Text>
       </View>
 
-      {/* Botón de eliminar (Componente interactivo dentro de otro) */}
       <TouchableOpacity 
         style={styles.btnEliminar} 
         onPress={() => eliminarPieza(item.id)}
@@ -81,9 +85,19 @@ export default function App() {
     </TouchableOpacity>
   );
 
+  // Lógica para agregar y ordenar automáticamente
+  const agregarNuevaPieza = (nuevaPieza) => {
+    const listaActualizada = [...piezas, nuevaPieza];
+    
+    listaActualizada.sort((a, b) => {
+      return new Date(b.fecha) - new Date(a.fecha);
+    });
+
+    setPiezas(listaActualizada);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      {/* StatusBar: Controla la barra de batería/hora del iPhone */}
       <StatusBar barStyle="dark-content" />
 
       {/* HEADER (Componente Básico) */}
@@ -91,12 +105,12 @@ export default function App() {
         <Text style={styles.headerTitle}>Gestión de Piezas SV</Text>
       </View>
 
-      {/* BOTÓN PRINCIPAL (Uso de componentes básicos) */}
+      {/* BOTÓN PRINCIPAL */}
       <View style={styles.botonContainer}>
         <Button 
           title="Agregar Pieza Nueva" 
           color="#1a73e8" 
-          onPress={() => alert('Próximo paso: Crear el Modal')} 
+          onPress={() => setModalFormularioVisible(true)} 
         />
       </View>
 
@@ -105,11 +119,24 @@ export default function App() {
         data={piezas}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
-        // Mensaje cuando la lista queda vacía (Rúbrica: Manejo de estados)
         ListEmptyComponent={
           <Text style={styles.empty}>No hay registros. ¡Agrega el primero!</Text>
         }
       />
+
+      {/* Modales de la aplicación */}
+      <PiezaFormModal 
+        visible={modalFormularioVisible}
+        cerrarModal={() => setModalFormularioVisible(false)}
+        agregarNuevaPieza={agregarNuevaPieza}
+      />
+
+      <DetallePiezaModal 
+        visible={modalDetalleVisible}
+        pieza={piezaSeleccionada}
+        cerrarModal={() => setModalDetalleVisible(false)}
+      />
+
     </SafeAreaView>
   );
 }
