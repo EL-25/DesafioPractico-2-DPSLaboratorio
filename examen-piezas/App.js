@@ -9,11 +9,8 @@ import {
   SafeAreaView,
   StatusBar
 } from 'react-native';
-
 import PiezaFormModal from './src/components/PiezaFormModal';
 import DetallePiezaModal from './src/components/DetallePiezaModal';
-
-// 1. IMPORTACIÓN DE ESTILOS EXTERNOS
 import { styles } from './src/styles/globalStyles';
 
 export default function App() {
@@ -129,6 +126,7 @@ export default function App() {
         visible={modalFormularioVisible}
         cerrarModal={() => setModalFormularioVisible(false)}
         agregarNuevaPieza={agregarNuevaPieza}
+        piezasExistentes={piezas} 
       />
 
       <DetallePiezaModal 

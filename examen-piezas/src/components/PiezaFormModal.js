@@ -13,6 +13,9 @@ import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { estilos } from '../styles/PiezaFormStyle';
 
+// Añadimos 'piezasExistentes' a las props para poder comparar los números de serie
+const PiezaFormModal = ({ visible, cerrarModal, agregarNuevaPieza, piezasExistentes }) => {
+  
 const PiezaFormModal = ({ visible, cerrarModal, agregarNuevaPieza }) => {
   // --- LÓGICA DINÁMICA DEL PICKER ---
   const [categorias, setCategorias] = useState([
@@ -48,6 +51,9 @@ const PiezaFormModal = ({ visible, cerrarModal, agregarNuevaPieza }) => {
       return;
     }
 
+    setCategorias([...categorias, nuevaCat.trim()]);
+    setTipoSeleccionado(nuevaCat.trim());
+    setNuevaCat('');
     setCategorias([...categorias, nuevaCat.trim()]); // Agrega al array
     setTipoSeleccionado(nuevaCat.trim()); // Lo selecciona automáticamente
     setNuevaCat(''); // Limpia el input
@@ -66,16 +72,32 @@ const PiezaFormModal = ({ visible, cerrarModal, agregarNuevaPieza }) => {
   };
 
   const guardarYEnviar = () => {
+    // 1. Validar campos vacíos
     if (!marcaIngresada || !serieIngresada || !precioIngresado || textoFechaBoton === 'Seleccionar Fecha') {
       Alert.alert("Incompleto", "Por favor, llena todos los campos y selecciona una fecha.");
       return;
     }
 
+    // 2. VALIDACIÓN DE NÚMERO DE SERIE DUPLICADO
+    // Buscamos si ya existe una pieza con el mismo número de serie en el arreglo actual
+    const serieExiste = piezasExistentes.some(
+      (pieza) => pieza.serie.trim().toLowerCase() === serieIngresada.trim().toLowerCase()
+    );
+
+    if (serieExiste) {
+      Alert.alert(
+        "Serie Duplicada", 
+        `El número de serie "${serieIngresada}" ya está registrado. Por favor, verifica el código.`
+      );
+      return; // Detiene la ejecución y no guarda
+    }
+
+    // 3. Si pasa las validaciones, se crea el objeto
     const nuevaPieza = {
       id: Date.now().toString(),
       tipo: tipoSeleccionado,
       marca: marcaIngresada,
-      serie: serieIngresada,
+      serie: serieIngresada.trim(),
       precio: precioIngresado,
       fecha: textoFechaBoton 
     };
