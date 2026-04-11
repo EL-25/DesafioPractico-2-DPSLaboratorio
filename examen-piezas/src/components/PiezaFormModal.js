@@ -6,31 +6,59 @@ import {
   TextInput, 
   TouchableHighlight,
   ScrollView,
-  Platform 
+  Platform,
+  Alert 
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-// Importamos el selector de fecha nativo
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { estilos} from '../styles/PiezaFormStyle';
+import { estilos } from '../styles/PiezaFormStyle';
 
-const PiezaFormModal = ({ visible, cerrarModal, agregarNuevaPieza }) => {
+// Añadimos 'piezasExistentes' a las props para poder comparar los números de serie
+const PiezaFormModal = ({ visible, cerrarModal, agregarNuevaPieza, piezasExistentes }) => {
+  
+  // --- LÓGICA DINÁMICA DEL PICKER ---
+  const [categorias, setCategorias] = useState([
+    'Bujía', 
+    'Filtro de Aceite', 
+    'Filtro de Aire', 
+    'Pastillas de Freno', 
+    'Bateria de aceite'
+  ]);
+  const [nuevaCat, setNuevaCat] = useState('');
+
+  // ESTADOS DEL FORMULARIO
   const [tipoSeleccionado, setTipoSeleccionado] = useState('Bujía');
   const [marcaIngresada, setMarcaIngresada] = useState('');
   const [serieIngresada, setSerieIngresada] = useState('');
   const [precioIngresado, setPrecioIngresado] = useState('');
   
-  // Estados para la fecha
+  // ESTADOS PARA LA FECHA
   const [fechaObjeto, setFechaObjeto] = useState(new Date());
   const [mostrarCalendario, setMostrarCalendario] = useState(false);
   const [textoFechaBoton, setTextoFechaBoton] = useState('Seleccionar Fecha');
 
+  // Función para agregar un elemento nuevo al Picker
+  const agregarCategoriaDinamica = () => {
+    if (nuevaCat.trim() === '') {
+      Alert.alert("Campo vacío", "Por favor escribe el nombre de la nueva pieza.");
+      return;
+    }
+    
+    if (categorias.includes(nuevaCat.trim())) {
+      Alert.alert("Aviso", "Esta categoría ya existe.");
+      return;
+    }
+
+    setCategorias([...categorias, nuevaCat.trim()]);
+    setTipoSeleccionado(nuevaCat.trim());
+    setNuevaCat('');
+  };
+
   const manejarCambioDeFecha = (evento, fechaSeleccionada) => {
-    // En Android, al seleccionar o cancelar se debe cerrar el calendario
     setMostrarCalendario(Platform.OS === 'ios'); 
     
     if (fechaSeleccionada) {
       setFechaObjeto(fechaSeleccionada);
-      // Formateamos la fecha para mostrarla en el botón (YYYY-MM-DD)
       const anio = fechaSeleccionada.getFullYear();
       const mes = String(fechaSeleccionada.getMonth() + 1).padStart(2, '0');
       const dia = String(fechaSeleccionada.getDate()).padStart(2, '0');
@@ -39,18 +67,33 @@ const PiezaFormModal = ({ visible, cerrarModal, agregarNuevaPieza }) => {
   };
 
   const guardarYEnviar = () => {
+    // 1. Validar campos vacíos
     if (!marcaIngresada || !serieIngresada || !precioIngresado || textoFechaBoton === 'Seleccionar Fecha') {
-      alert("Por favor, llena todos los campos y selecciona una fecha.");
+      Alert.alert("Incompleto", "Por favor, llena todos los campos y selecciona una fecha.");
       return;
     }
 
+    // 2. VALIDACIÓN DE NÚMERO DE SERIE DUPLICADO
+    // Buscamos si ya existe una pieza con el mismo número de serie en el arreglo actual
+    const serieExiste = piezasExistentes.some(
+      (pieza) => pieza.serie.trim().toLowerCase() === serieIngresada.trim().toLowerCase()
+    );
+
+    if (serieExiste) {
+      Alert.alert(
+        "Serie Duplicada", 
+        `El número de serie "${serieIngresada}" ya está registrado. Por favor, verifica el código.`
+      );
+      return; // Detiene la ejecución y no guarda
+    }
+
+    // 3. Si pasa las validaciones, se crea el objeto
     const nuevaPieza = {
       id: Date.now().toString(),
       tipo: tipoSeleccionado,
       marca: marcaIngresada,
-      serie: serieIngresada,
+      serie: serieIngresada.trim(),
       precio: precioIngresado,
-      // Enviamos la fecha formateada
       fecha: textoFechaBoton 
     };
 
@@ -64,6 +107,7 @@ const PiezaFormModal = ({ visible, cerrarModal, agregarNuevaPieza }) => {
     setPrecioIngresado('');
     setTextoFechaBoton('Seleccionar Fecha');
     setFechaObjeto(new Date());
+    setNuevaCat('');
     cerrarModal();
   };
 
@@ -73,19 +117,35 @@ const PiezaFormModal = ({ visible, cerrarModal, agregarNuevaPieza }) => {
         <View style={estilos.contenedorFormulario}>
           <Text style={estilos.titulo}>Nueva Pieza de Repuesto</Text>
           
-          <ScrollView>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {/* PICKER DINÁMICO */}
             <Text style={estilos.etiqueta}>Tipo de Pieza:</Text>
             <View style={estilos.contenedorPicker}>
               <Picker
                 selectedValue={tipoSeleccionado}
                 onValueChange={(item) => setTipoSeleccionado(item)}
               >
-                <Picker.Item label="Bujía" value="Bujía" />
-                <Picker.Item label="Filtro de Aceite" value="Filtro de Aceite" />
-                <Picker.Item label="Filtro de Aire" value="Filtro de Aire" />
-                <Picker.Item label="Pastillas de Freno" value="Pastillas de Freno" />
-                <Picker.Item label="Bateria de aceite" value="Baterias de aceite" />
+                {categorias.map((cat, index) => (
+                  <Picker.Item key={index} label={cat} value={cat} />
+                ))}
               </Picker>
+            </View>
+
+            {/* SECCIÓN AGREGAR CATEGORÍA */}
+            <View style={estilos.seccionNuevaCat}>
+              <TextInput 
+                style={[estilos.entradaTexto, { flex: 1, marginTop: 0 }]}
+                placeholder="¿No está en la lista? Escríbela aquí"
+                value={nuevaCat}
+                onChangeText={setNuevaCat}
+              />
+              <TouchableHighlight 
+                style={estilos.botonAdd} 
+                onPress={agregarCategoriaDinamica}
+                underlayColor="#1557b0"
+              >
+                <Text style={estilos.textoBlanco}>+</Text>
+              </TouchableHighlight>
             </View>
 
             <Text style={estilos.etiqueta}>Marca:</Text>
@@ -117,11 +177,11 @@ const PiezaFormModal = ({ visible, cerrarModal, agregarNuevaPieza }) => {
             <TouchableHighlight
               style={estilos.botonFecha} 
               onPress={() => setMostrarCalendario(true)}
+              underlayColor="#ddd"
             >
               <Text style={estilos.textoBotonFecha}>{textoFechaBoton}</Text>
             </TouchableHighlight>
 
-            {/* Componente del Calendario */}
             {mostrarCalendario && (
               <DateTimePicker
                 value={fechaObjeto}
@@ -132,11 +192,19 @@ const PiezaFormModal = ({ visible, cerrarModal, agregarNuevaPieza }) => {
             )}
 
             <View style={estilos.filaBotones}>
-              <TouchableHighlight style={[estilos.boton, estilos.botonCancelar]} onPress={limpiarFormulario}>
+              <TouchableHighlight 
+                style={[estilos.boton, estilos.botonCancelar]} 
+                onPress={limpiarFormulario}
+                underlayColor="#777"
+              >
                 <Text style={estilos.textoBlanco}>Cancelar</Text>
               </TouchableHighlight>
               
-              <TouchableHighlight style={[estilos.boton, estilos.botonGuardar]} onPress={guardarYEnviar}>
+              <TouchableHighlight 
+                style={[estilos.boton, estilos.botonGuardar]} 
+                onPress={guardarYEnviar}
+                underlayColor="#0d47a1"
+              >
                 <Text style={estilos.textoBlanco}>Guardar</Text>
               </TouchableHighlight>
             </View>
@@ -146,6 +214,5 @@ const PiezaFormModal = ({ visible, cerrarModal, agregarNuevaPieza }) => {
     </Modal>
   );
 };
-
 
 export default PiezaFormModal;
