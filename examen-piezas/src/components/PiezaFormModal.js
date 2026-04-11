@@ -13,10 +13,8 @@ import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { estilos } from '../styles/PiezaFormStyle';
 
-// Añadimos 'piezasExistentes' a las props para poder comparar los números de serie
 const PiezaFormModal = ({ visible, cerrarModal, agregarNuevaPieza, piezasExistentes }) => {
   
-const PiezaFormModal = ({ visible, cerrarModal, agregarNuevaPieza }) => {
   // --- LÓGICA DINÁMICA DEL PICKER ---
   const [categorias, setCategorias] = useState([
     'Bujía', 
@@ -45,7 +43,6 @@ const PiezaFormModal = ({ visible, cerrarModal, agregarNuevaPieza }) => {
       return;
     }
     
-    // Evitar duplicados
     if (categorias.includes(nuevaCat.trim())) {
       Alert.alert("Aviso", "Esta categoría ya existe.");
       return;
@@ -54,9 +51,6 @@ const PiezaFormModal = ({ visible, cerrarModal, agregarNuevaPieza }) => {
     setCategorias([...categorias, nuevaCat.trim()]);
     setTipoSeleccionado(nuevaCat.trim());
     setNuevaCat('');
-    setCategorias([...categorias, nuevaCat.trim()]); // Agrega al array
-    setTipoSeleccionado(nuevaCat.trim()); // Lo selecciona automáticamente
-    setNuevaCat(''); // Limpia el input
   };
 
   const manejarCambioDeFecha = (evento, fechaSeleccionada) => {
