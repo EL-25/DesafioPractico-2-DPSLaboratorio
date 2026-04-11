@@ -2,38 +2,71 @@ import { StyleSheet } from 'react-native';
 
 export const estilos = StyleSheet.create({
   fondoOscuro: { 
-    flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', 
-    justifyContent: 'center' },
+    flex: 1, 
+    backgroundColor: 'rgba(0,0,0,0.6)', 
+    justifyContent: 'center' 
+  },
 
   contenedorFormulario: { 
     backgroundColor: 'white', 
     margin: 20, 
     padding: 20, 
-    borderRadius: 15 },
+    borderRadius: 15,
+    maxHeight: '80%'
+  },
 
   titulo: { 
-    fontSize: 20, 
+    fontSize: 22, 
     fontWeight: 'bold', 
     marginBottom: 15, 
     textAlign: 'center', 
-    color: '#1a73e8' },
+    color: '#1a73e8' 
+  },
 
   etiqueta: { 
     fontWeight: '600', 
-    marginTop: 10, color: '#555' },
+    marginTop: 15, 
+    color: '#555',
+    fontSize: 14
+  },
 
-entradaTexto: { 
+  entradaTexto: { 
     borderWidth: 1, 
     borderColor: '#ccc', 
     borderRadius: 8, 
     padding: 10, 
-    marginTop: 5 },
+    marginTop: 5,
+    backgroundColor: '#fff'
+  },
 
   contenedorPicker: { 
     borderWidth: 1, 
     borderColor: '#ccc',
     borderRadius: 8, 
-    marginTop: 5 },
+    marginTop: 5,
+    backgroundColor: '#f9f9f9',
+    overflow: 'hidden'
+  },
+
+  seccionNuevaCat: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+    gap: 10
+  },
+
+  botonAdd: {
+    backgroundColor: '#1a73e8',
+    width: 45,
+    height: 45,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+  },
 
   botonFecha: { 
     backgroundColor: '#f0f0f0', 
@@ -41,30 +74,42 @@ entradaTexto: {
     borderRadius: 8, 
     marginTop: 5, 
     borderWidth: 1, 
-    borderColor: '#ccc' 
+    borderColor: '#ccc',
+    alignItems: 'center'
   },
 
   textoBotonFecha: {
     color: '#333', 
-    textAlign: 'center' },
+    fontWeight: '500'
+  },
 
   filaBotones: { 
     flexDirection: 'row', 
     justifyContent: 'space-between', 
-    marginTop: 25 },
+    marginTop: 30,
+    marginBottom: 10
+  },
 
   boton: { 
     padding: 15, 
     borderRadius: 10, 
     width: '48%',
-    alignItems: 'center' },
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
 
-  botonCancelar: { backgroundColor: '#999' },
+  botonCancelar: { 
+    backgroundColor: '#999' 
+  },
 
-  botonGuardar: { backgroundColor: '#1a73e8' },
+  botonGuardar: { 
+    backgroundColor: '#1a73e8' 
+  },
 
   textoBlanco: { 
     color: 'white', 
     textAlign: 'center', 
-    fontWeight: 'bold' }
+    fontWeight: 'bold',
+    fontSize: 16
+  }
 });
